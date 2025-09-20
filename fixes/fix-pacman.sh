@@ -22,7 +22,7 @@ main() {
 
     log "Configuring pacman for container environment..."
     
-    chroot "$ARCH_ROOT" /bin/bash -c "
+    chroot "$ARCH_ROOT" /usr/bin/bash -c "
         # Backup original config
         [[ ! -f /etc/pacman.conf.original ]] && cp /etc/pacman.conf /etc/pacman.conf.original
         

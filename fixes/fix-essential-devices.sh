@@ -255,7 +255,7 @@ DEVICEFIX
     
     # Test the fix
     log "Testing essential devices functionality..."
-    if chroot "$ARCH_ROOT" /bin/bash -c 'echo "test" > /dev/null 2>&1 && head -c 1 /dev/zero >/dev/null'; then
+    if chroot "$ARCH_ROOT" /usr/bin/bash -c 'echo "test" > /dev/null 2>&1 && head -c 1 /dev/zero >/dev/null'; then
         log "✓ Essential devices test passed"
     else
         log "⚠ Some essential devices may not work properly"

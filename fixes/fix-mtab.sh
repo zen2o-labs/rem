@@ -22,7 +22,7 @@ main() {
 
     log "Fixing /etc/mtab for pacman filesystem detection..."
     
-    chroot "$ARCH_ROOT" /bin/bash << 'MTABFIX'
+    chroot "$ARCH_ROOT" /usr/bin/bash << 'MTABFIX'
 #!/bin/bash
 set -euo pipefail
 
