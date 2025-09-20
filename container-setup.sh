@@ -24,7 +24,19 @@ rm -rf "$REPO_DIR"
 git clone "https://github.com/zen2o-labs/rem.git" "$REPO_DIR"
 
 # Make scripts executable
-find "$REPO_DIR" -maxdepth 3 -type f -name "*.sh" -not -path "*/arch-root/*" -exec chmod +x {} \\;
+echo "🔧 Making scripts executable..."
+
+if [[ -d "$REPO_DIR" ]]; then
+    # Make all shell scripts executable in key directories
+    chmod +x "$REPO_DIR"/*.sh 2>/dev/null || true
+    chmod +x "$REPO_DIR/scripts"/*.sh 2>/dev/null || true  
+    chmod +x "$REPO_DIR/fixes"/*.sh 2>/dev/null || true
+    
+    echo "✅ Made executable: main scripts, scripts/, and fixes/"
+else
+    echo "❌ Repository directory not found: $REPO_DIR"
+    exit 1
+fi
 
 # Export variables for the Arch setup scripts to match unified config approach
 export WORKSPACE_DIR="$WORKSPACE"
