@@ -22,7 +22,7 @@ main() {
 
     log "Setting up file descriptor support for pacman-key..."
     
-    chroot "$ARCH_ROOT" /bin/bash -c "
+    chroot "$ARCH_ROOT" /usr/bin/bash -c "
         # Try symlink approach first
         if ln -sf /proc/self/fd /dev/fd 2>/dev/null; then
             echo '✓ Created /dev/fd symlink'
