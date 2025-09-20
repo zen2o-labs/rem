@@ -27,6 +27,11 @@ main() {
     mkdir -p "$ARCH_ROOT/etc/ca-certificates/trust-source/anchors"
     mkdir -p "$ARCH_ROOT/etc/profile.d"  # This was missing!
     
+    # Set proper permissions
+    chmod 755 "$ARCH_ROOT/etc"
+    chmod 755 "$ARCH_ROOT/etc/ssl"
+    chmod 755 "$ARCH_ROOT/etc/ssl/certs"
+    
     # Copy SSL certificates
     if [[ -f /etc/ssl/certs/ca-certificates.crt ]]; then
         cp /etc/ssl/certs/ca-certificates.crt "$ARCH_ROOT/etc/ssl/certs/"
