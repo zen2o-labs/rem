@@ -15,13 +15,13 @@ ARCH_ROOT_PASSWORD="${ARCH_ROOT_PASSWORD:-}"
 
 echo "🚀 RunPod Arch Linux Setup - Starting..."
 echo "📁 Workspace: $WORKSPACE"
-echo "📦 Repository: $GITHUB_USER/$REPO_NAME"
+echo "📦 Repository: zen2o-labs/rem.git"
 echo "👤 User: $ARCH_USERNAME"
 
 # Clone repository  
 echo "📥 Cloning repository..."
 rm -rf "$REPO_DIR"
-git clone "https://github.com/${GITHUB_USER}/${REPO_NAME}.git" "$REPO_DIR"
+git clone "https://github.com/zen2o-labs/rem.git" "$REPO_DIR"
 
 # Make scripts executable
 find "$REPO_DIR" -maxdepth 3 -type f -name "*.sh" -not -path "*/arch-root/*" -exec chmod +x {} \;
