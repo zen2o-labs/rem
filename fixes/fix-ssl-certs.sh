@@ -24,9 +24,18 @@ main() {
     
     log "Copying SSL certificates from Ubuntu host to Arch chroot at $ARCH_ROOT..."
     
+    # Ensure SSL directories exist
+    mkdir -p "$ARCH_ROOT/etc/ssl/certs"
+    
+    # ✅ MOVE THIS PART HERE - Check for broken symlinks BEFORE copying
+    if [[ -L "$ARCH_ROOT/etc/ssl/certs/ca-certificates.crt" ]]; then
+        log "Removing broken certificate symlink..."
+        rm -f "$ARCH_ROOT/etc/ssl/certs/ca-certificates.crt"
+    fi
+    
     # Copy SSL certificates
     if [[ -f /etc/ssl/certs/ca-certificates.crt ]]; then
-        mkdir -p "$ARCH_ROOT/etc/ssl/certs"
+        log "Copying main certificate bundle..."
         cp /etc/ssl/certs/ca-certificates.crt "$ARCH_ROOT/etc/ssl/certs/"
         cp -r /etc/ssl/certs/* "$ARCH_ROOT/etc/ssl/certs/" 2>/dev/null || true
         log "✓ Copied main certificate bundle"
