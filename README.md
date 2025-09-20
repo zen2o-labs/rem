@@ -32,7 +32,7 @@ bash -c '
 '
 ```
 ## If passwords and usernames are not Set
-always create a password and username if not then you should not login into Arch. Instead Login into the container Shell go the repo
+Always create a password and username. If not then you should not login into Arch. Instead Login into the container Shell go the repo
 you will find a config file containing generated passwords
 
 That's it! The setup automatically:
