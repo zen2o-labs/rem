@@ -24,6 +24,7 @@ main() {
         "fix-network.sh"
         "fix-pacman.sh"
         "fix-essential-devices.sh"
+        "fix-sudo-permissions.sh" 
     )
     
     for fix in "${fixes[@]}"; do
