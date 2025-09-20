@@ -135,86 +135,64 @@ else
 fi
 
 # Create interactive shell selector
-cat > ~/.shell_selector.sh << SELECTOREOF
+cat > ~/.shell_selector.sh << 'EOF'
 #!/bin/bash
-# Configuration from unified config
-CONFIG_FILE="$CONFIG_FILE"
-WORKSPACE="$DISPLAY_WORKSPACE"
-ARCH_ROOT="$DISPLAY_ARCH_ROOT"
-USERNAME="$DISPLAY_USERNAME"
 
-# Skip if already selected or non-interactive
-[[ -n "\\${SHELL_SELECTED:-}" || ! -t 0 ]] && return 0
+# Simple shell selector
+WORKSPACE="/workspace"
+CONFIG_FILE="$WORKSPACE/arch-config.txt"
 
-echo ""
-echo "🐧 Welcome to RunPod with Arch Linux Chroot!"
-echo ""
-
-if [[ -f "\\$ARCH_ROOT/.setup_complete" ]]; then
-    echo "✅ Arch Linux environment is ready"
-    
-    # Show credentials info
-    if [[ -f "\\$WORKSPACE/show-credentials.sh" ]]; then
-        echo "📋 Quick info:"
-        "\\$WORKSPACE/show-credentials.sh" | grep -E "(Username|Password)" | head -4
-        echo ""
-    fi
-    
-    echo "🔍 Choose your environment:"
-    echo "  [1] 🐧 Enter Arch Linux (\\$USERNAME user)"
-    echo "  [2] 🐳 Stay in Ubuntu shell (root)"
-    echo "  [3] 📊 Show system dashboard first"
-    echo ""
-    
-    while true; do
-        read -p "Enter choice [1-3]: " -n 1 choice
-        echo ""
-        
-        case \\$choice in
-            1)
-                echo "🚀 Entering Arch Linux as \\$USERNAME user..."
-                sleep 1
-                export SHELL_SELECTED=arch
-                if [[ -f "\\$WORKSPACE/enter-arch-user.sh" ]]; then
-                    exec "\\$WORKSPACE/enter-arch-user.sh"
-                else
-                    echo "❌ Entry script not found. Run: \\$WORKSPACE/rem/start.sh"
-                    export SHELL_SELECTED=ubuntu
-                fi
-                ;;
-            2)
-                echo "🐳 Staying in Ubuntu shell"
-                export SHELL_SELECTED=ubuntu
-                export PS1="\\[\\e[1;34m\\][Ubuntu]\\[\\e[0m\\] \\w # "
-                break
-                ;;
-            3)
-                echo "📊 System Dashboard:"
-                if [[ -f "\\$WORKSPACE/tools/dashboard.sh" ]]; then
-                    "\\$WORKSPACE/tools/dashboard.sh"
-                elif [[ -f "\\$WORKSPACE/verify-setup.sh" ]]; then
-                    "\\$WORKSPACE/verify-setup.sh"
-                else
-                    echo "Dashboard not available. Setup may be incomplete."
-                fi
-                echo ""
-                echo "Press any key to continue..."
-                read -n 1
-                # Loop back to choice menu
-                ;;
-            *)
-                echo "❌ Invalid choice. Please enter 1, 2, or 3."
-                ;;
-        esac
-    done
-else
-    echo "❌ Arch Linux environment not ready"
-    echo "📋 Run: \\$WORKSPACE/rem/start.sh"
-    echo ""
-    echo "🐳 Starting Ubuntu shell..."
-    export PS1="\\[\\e[1;31m\\][Ubuntu-Setup-Needed]\\[\\e[0m\\] \\w # "
+# Skip if not interactive or already selected
+if [[ ! -t 0 ]] || [[ -n "${SHELL_SELECTED:-}" ]]; then
+    return 0
 fi
-SELECTOREOF
+
+# Load username from config
+USERNAME="developer"
+if [[ -f "$CONFIG_FILE" ]]; then
+    source "$CONFIG_FILE" 2>/dev/null || true
+fi
+
+echo ""
+echo "=== Arch Linux Environment ==="
+echo ""
+echo "Choose your shell:"
+echo "1) Arch Linux ($USERNAME user)"
+echo "2) Ubuntu (root user)"
+echo "3) Show status"
+echo ""
+
+read -p "Choice [1-3]: " -n 1 choice
+echo ""
+
+case $choice in
+    1)
+        export SHELL_SELECTED=arch
+        echo "Starting Arch Linux..."
+        if [[ -f "$WORKSPACE/enter-arch-user.sh" ]]; then
+            exec "$WORKSPACE/enter-arch-user.sh"
+        else
+            echo "Arch not ready. Run: $WORKSPACE/rem/start.sh"
+        fi
+        ;;
+    2)
+        export SHELL_SELECTED=ubuntu
+        export PS1="[Ubuntu] \w # "
+        echo "Ubuntu shell ready"
+        ;;
+    3)
+        if [[ -f "$WORKSPACE/verify-setup.sh" ]]; then
+            "$WORKSPACE/verify-setup.sh"
+        else
+            echo "Status script not available"
+        fi
+        ;;
+    *)
+        export SHELL_SELECTED=ubuntu
+        echo "Invalid choice, using Ubuntu shell"
+        ;;
+esac
+EOF
 chmod +x ~/.shell_selector.sh
 
 # Configure SSH to show interactive menu
