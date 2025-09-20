@@ -1,6 +1,6 @@
 #!/bin/bash
 # /container-setup.sh
-set -euo pipefail
+set -eo pipefail
 
 # Configuration variables with defaults
 WORKSPACE="${WORKSPACE:-/workspace}"
@@ -144,7 +144,7 @@ ARCH_ROOT="$DISPLAY_ARCH_ROOT"
 USERNAME="$DISPLAY_USERNAME"
 
 # Skip if already selected or non-interactive
-[[ -n "\\$SHELL_SELECTED" || ! -t 0 ]] && return 0
+[[ -n "\\${SHELL_SELECTED:-}" || ! -t 0 ]] && return 0
 
 echo ""
 echo "🐧 Welcome to RunPod with Arch Linux Chroot!"
@@ -219,8 +219,8 @@ chmod +x ~/.shell_selector.sh
 
 # Configure SSH to show interactive menu
 cat >> ~/.bashrc << 'BASHRCEOF'
-# Interactive shell selection for SSH sessions
-if [[ $- == *i* && -z "$SHELL_SELECTED" ]]; then
+# Interactive shell selection for SSH sessions - Handle unbound variables safely
+if [[ $- == *i* && -z "${SHELL_SELECTED:-}" ]]; then
     source ~/.shell_selector.sh
 fi
 BASHRCEOF
