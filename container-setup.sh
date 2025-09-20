@@ -25,7 +25,6 @@ git clone "https://github.com/zen2o-labs/rem.git" "$REPO_DIR"
 
 # Make scripts executable
 echo "🔧 Making scripts executable..."
-
 if [[ -d "$REPO_DIR" ]]; then
     # Make all shell scripts executable in key directories
     chmod +x "$REPO_DIR"/*.sh 2>/dev/null || true
@@ -65,19 +64,14 @@ if [[ ! -f "$ARCH_ROOT/.setup_complete" ]]; then
 # ===== DIRECTORY CONFIGURATION =====
 # Repository location (where scripts are located)
 SCRIPT_DIR="$REPO_DIR"
-
 # Workspace location (where arch-root and tools will be created) 
 WORKSPACE_DIR="$WORKSPACE"
-
 # Directory where the Arch Linux root filesystem will be created
 ARCH_ROOT="$ARCH_ROOT"
-
 # Directory containing fix scripts
 FIXES_DIR="$REPO_DIR/fixes"
-
 # Directory containing setup scripts
 SCRIPTS_DIR="$REPO_DIR/scripts"
-
 # Directory for tools (created in workspace, not in repo)
 TOOLS_DIR="$WORKSPACE/tools"
 
@@ -94,7 +88,6 @@ ROOT_PASS="$ROOT_PASS"
 
 # ===== ADDITIONAL OPTIONS =====
 # Add your custom variables below as needed
-
 # Example custom settings (uncomment and modify as needed):
 # CUSTOM_PACKAGES="git vim htop neofetch"
 # ENABLE_SSH="true"
@@ -134,11 +127,10 @@ else
     DISPLAY_ARCH_ROOT="$ARCH_ROOT"
 fi
 
-# Create interactive shell selector
+# Create interactive shell selector - MODIFIED FOR ROOT ACCESS
 cat > ~/.shell_selector.sh << 'EOF'
 #!/bin/bash
-
-# Simple shell selector
+# Shell selector with root access option
 WORKSPACE="/workspace"
 CONFIG_FILE="$WORKSPACE/arch-config.txt"
 
@@ -157,30 +149,40 @@ echo ""
 echo "=== Arch Linux Environment ==="
 echo ""
 echo "Choose your shell:"
-echo "1) Arch Linux ($USERNAME user)"
-echo "2) Ubuntu (root user)"
-echo "3) Show status"
+echo "1) Arch Linux ($USERNAME user)"  
+echo "2) Arch Linux (root user)"
+echo "3) Ubuntu (root user)"
+echo "4) Show status"
 echo ""
 
-read -p "Choice [1-3]: " -n 1 choice
+read -p "Choice [1-4]: " -n 1 choice
 echo ""
 
 case $choice in
     1)
-        export SHELL_SELECTED=arch
-        echo "Starting Arch Linux..."
+        export SHELL_SELECTED=arch-user
+        echo "Starting Arch Linux as $USERNAME..."
         if [[ -f "$WORKSPACE/enter-arch-user.sh" ]]; then
             exec "$WORKSPACE/enter-arch-user.sh"
         else
-            echo "Arch not ready. Run: $WORKSPACE/rem/start.sh"
+            echo "User entry script not found. Run: $WORKSPACE/rem/start.sh"
         fi
         ;;
     2)
+        export SHELL_SELECTED=arch-root
+        echo "Starting Arch Linux as root..."
+        if [[ -f "$WORKSPACE/enter-arch.sh" ]]; then
+            exec "$WORKSPACE/enter-arch.sh"
+        else
+            echo "Root entry script not found. Run: $WORKSPACE/rem/start.sh"
+        fi
+        ;;
+    3)
         export SHELL_SELECTED=ubuntu
         export PS1="[Ubuntu] \w # "
         echo "Ubuntu shell ready"
         ;;
-    3)
+    4)
         if [[ -f "$WORKSPACE/verify-setup.sh" ]]; then
             "$WORKSPACE/verify-setup.sh"
         else
@@ -203,33 +205,45 @@ if [[ $- == *i* && -z "${SHELL_SELECTED:-}" ]]; then
 fi
 BASHRCEOF
 
-# Create direct access scripts
-cat > "$WORKSPACE/arch-direct.sh" << ARCHDIRECTEOF
+# Create direct access scripts - UPDATED FOR ROOT ACCESS
+cat > "$WORKSPACE/arch-user.sh" << ARCHUSERDIRECTEOF
 #!/bin/bash
-echo "🐧 Direct access to Arch Linux..."
-export SHELL_SELECTED=arch
-
-# Check if entry script exists
+echo "🐧 Direct access to Arch Linux as user..."
+export SHELL_SELECTED=arch-user
 if [[ -f "$WORKSPACE/enter-arch-user.sh" ]]; then
     exec "$WORKSPACE/enter-arch-user.sh"
 else
-    echo "❌ Entry script not found at $WORKSPACE/enter-arch-user.sh"
+    echo "❌ User entry script not found at $WORKSPACE/enter-arch-user.sh"
     echo "📋 Run: $WORKSPACE/rem/start.sh to set up"
     exit 1
 fi
-ARCHDIRECTEOF
-chmod +x "$WORKSPACE/arch-direct.sh"
+ARCHUSERDIRECTEOF
+chmod +x "$WORKSPACE/arch-user.sh"
+
+cat > "$WORKSPACE/arch-root.sh" << ARCHROOTDIRECTEOF
+#!/bin/bash
+echo "🐧 Direct access to Arch Linux as root..."
+export SHELL_SELECTED=arch-root
+if [[ -f "$WORKSPACE/enter-arch.sh" ]]; then
+    exec "$WORKSPACE/enter-arch.sh"
+else
+    echo "❌ Root entry script not found at $WORKSPACE/enter-arch.sh"
+    echo "📋 Run: $WORKSPACE/rem/start.sh to set up"
+    exit 1
+fi
+ARCHROOTDIRECTEOF
+chmod +x "$WORKSPACE/arch-root.sh"
 
 cat > "$WORKSPACE/ubuntu-direct.sh" << UBUNTUDIRECTEOF
 #!/bin/bash
 echo "🐳 Direct access to Ubuntu shell..."
 export SHELL_SELECTED=ubuntu
-export PS1="\\[\\e[1;34m\\][Ubuntu]\\[\\e[0m\\] \\w # "
+export PS1="\[\e[1;34m\][Ubuntu]\[\e[0m\] \w # "
 exec /bin/bash --norc
 UBUNTUDIRECTEOF
 chmod +x "$WORKSPACE/ubuntu-direct.sh"
 
-# Create verification script compatible with unified config
+# Create verification script - UPDATED FOR ROOT ACCESS
 cat > "$WORKSPACE/verify-setup.sh" << VERIFYEOF
 #!/bin/bash
 echo "🔍 System Status Check"
@@ -251,7 +265,7 @@ if [[ -f "$DISPLAY_ARCH_ROOT/.setup_complete" ]]; then
     fi
     
     # Check if user can enter Arch (with timeout to avoid hanging)
-    if timeout 5 bash -c "source '$CONFIG_FILE' 2>/dev/null && [[ -d '\\$ARCH_ROOT' ]]" 2>/dev/null; then
+    if timeout 5 bash -c "source '$CONFIG_FILE' 2>/dev/null && [[ -d '\$ARCH_ROOT' ]]" 2>/dev/null; then
         echo ""
         echo "✅ Arch Access: Paths verified"
     else
@@ -260,13 +274,13 @@ if [[ -f "$DISPLAY_ARCH_ROOT/.setup_complete" ]]; then
     fi
     
     # Show helper scripts
-    helper_count=\\$(ls "$WORKSPACE"/{enter-arch,show-credentials}*.sh 2>/dev/null | wc -l)
-    echo "✅ Helper Scripts: \\$helper_count available"
+    helper_count=\$(ls "$WORKSPACE"/{enter-arch,show-credentials}*.sh 2>/dev/null | wc -l)
+    echo "✅ Helper Scripts: \$helper_count available"
     
     # Show tools
     if [[ -d "$WORKSPACE/tools" ]]; then
-        tool_count=\\$(ls "$WORKSPACE/tools"/*.sh 2>/dev/null | wc -l)
-        echo "✅ Tools: \\$tool_count available"
+        tool_count=\$(ls "$WORKSPACE/tools"/*.sh 2>/dev/null | wc -l)
+        echo "✅ Tools: \$tool_count available"
     fi
     
 else
@@ -276,8 +290,9 @@ fi
 
 echo ""
 echo "🔗 Direct Access:"
-echo "  $WORKSPACE/arch-direct.sh   - Go straight to Arch"
-echo "  $WORKSPACE/ubuntu-direct.sh - Go straight to Ubuntu"
+echo "  $WORKSPACE/arch-user.sh     - Arch Linux as user"
+echo "  $WORKSPACE/arch-root.sh     - Arch Linux as root"  
+echo "  $WORKSPACE/ubuntu-direct.sh - Ubuntu as root"
 VERIFYEOF
 chmod +x "$WORKSPACE/verify-setup.sh"
 
@@ -288,17 +303,16 @@ echo "📁 Workspace: $DISPLAY_WORKSPACE"
 echo "📦 Repository: $REPO_DIR"
 echo "👤 Username: $DISPLAY_USERNAME"
 echo "📄 Config: $CONFIG_FILE"
-
 if [[ -n "$ARCH_USER_PASSWORD" ]]; then
     echo "🔐 Custom credentials: Used"
 else
     echo "🔐 Generated credentials: Check $CONFIG_FILE"
 fi
-
 echo ""
 echo "🔗 Access methods:"
-echo "  SSH: Interactive choice menu"
-echo "  Direct Arch: $WORKSPACE/arch-direct.sh"
-echo "  Direct Ubuntu: $WORKSPACE/ubuntu-direct.sh"
+echo "  SSH: Interactive choice menu (includes root option)"
+echo "  Arch User: $WORKSPACE/arch-user.sh"
+echo "  Arch Root: $WORKSPACE/arch-root.sh"
+echo "  Ubuntu: $WORKSPACE/ubuntu-direct.sh"
 echo "  Verification: $WORKSPACE/verify-setup.sh"
 echo "  Dashboard: $WORKSPACE/tools/dashboard.sh"
