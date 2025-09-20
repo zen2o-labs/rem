@@ -116,6 +116,36 @@ main() {
     
     touch "$ARCH_ROOT/.bootstrap_done"
     log "✓ Container-safe bootstrap completed"
+    
+        # Fix CA certificates directory with proper permissions
+        log "Setting up SSL certificates..."
+        
+        # Ensure directory structure exists with correct permissions
+        mkdir -p "$ARCH_ROOT/etc"
+        mkdir -p "$ARCH_ROOT/etc/ssl"
+        mkdir -p "$ARCH_ROOT/etc/ssl/certs"
+        mkdir -p "$ARCH_ROOT/etc/ca-certificates/extracted/cadir"
+        
+        # Set proper permissions
+        chmod 755 "$ARCH_ROOT/etc"
+        chmod 755 "$ARCH_ROOT/etc/ssl"
+        chmod 755 "$ARCH_ROOT/etc/ssl/certs"
+        chmod 755 "$ARCH_ROOT/etc/ca-certificates"
+        chmod 755 "$ARCH_ROOT/etc/ca-certificates/extracted"
+        chmod 755 "$ARCH_ROOT/etc/ca-certificates/extracted/cadir"
+        
+        # Copy system CA certificates from host if available
+        if [[ -f /etc/ssl/certs/ca-certificates.crt ]]; then
+            if cp /etc/ssl/certs/ca-certificates.crt "$ARCH_ROOT/etc/ssl/certs/" 2>/dev/null; then
+                log "✓ Copied host CA certificates"
+            else
+                log "⚠ Could not copy CA certificates (will be fixed by SSL fix script)"
+            fi
+        fi
+        
+        touch "$ARCH_ROOT/.bootstrap_done"
+        log "✓ Container-safe bootstrap completed"
+
 }
 
 main "$@"
