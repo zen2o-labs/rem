@@ -1,6 +1,6 @@
 # 🐧 REM - Arch chroot for Containers
 
-[![License: MIT](https://img.shields.://opensource.org/licenses/MITio/badge/Arch%20Linux-1793D1?logo/badge/Container-Ready-green
+![License: MIT](https://img.shields.://opensource.org/licenses/MITio/badge/Arch%20Linux-1793D1?logo/badge/Container-Ready-green)
 
 A complete Arch Linux chroot environment that runs inside Ubuntu-based containers, perfect for RunPod GPU instances. Get the power of Arch Linux's rolling releases and AUR packages while maintaining compatibility with containerized workflows.
 
