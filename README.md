@@ -11,18 +11,24 @@ cd "$WORKSPACE" && curl -fsSL https://raw.githubusercontent.com/zen2o-labs/rem/m
 ## 🚀 Setup (Example RunPod)
 ```bash
 bash -c '
-    export WORKSPACE="/your/mounted/directory/WORKSPACE";
-    export ARCH_USERNAME="${ARCH_USERNAME:-developer}";
-    export ARCH_USER_PASSWORD="${ARCH_USER_PASSWORD:-}";
-    export ARCH_ROOT_PASSWORD="${ARCH_ROOT_PASSWORD:-}";
-    export WORKSPACE="[your mounted directory/WORKSPACE]"
-    apt update && apt install -y git openssh-server curl;
-    mkdir -p "$WORKSPACE" ~/.ssh;
-    chmod 700 ~/.ssh;
-    [ -n "$PUBLIC_KEY" ] && echo "$PUBLIC_KEY" >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys;
-    service ssh start;
-    cd "$WORKSPACE" && curl -fsSL https://raw.githubusercontent.com/zen2o-labs/rem/main/container-setup.sh | bash;
-    sleep infinity 
+    export WORKSPACE="/workspace"
+    export ARCH_USERNAME="${ARCH_USERNAME:-hrik}"
+    export ARCH_USER_PASSWORD="${ARCH_USER_PASSWORD:-rootpass123}"
+    export ARCH_ROOT_PASSWORD="${ARCH_ROOT_PASSWORD:-rootpass123}"
+    export SSH_ROOT_PASSWORD="${SSH_ROOT_PASSWORD:-rootpass123}"
+    export SHELL_SELECTED=""
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt update -qq && apt install -y git openssh-server curl openssl && rm -rf /var/lib/apt/lists/*
+    mkdir -p /run/sshd "$WORKSPACE" ~/.ssh
+    chmod 700 ~/.ssh
+    echo "root:$SSH_ROOT_PASSWORD" | chpasswd
+    [ -n "$PUBLIC_KEY" ] && echo "$PUBLIC_KEY" >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+    service ssh start
+    cd "$WORKSPACE"
+    curl -fsSL https://raw.githubusercontent.com/zen2o-labs/rem/main/container-setup.sh | bash
+    sleep infinity
 '
 ```
 ## If passwords and usernames are not Set
@@ -74,7 +80,7 @@ After setup, your workspace will look like:
 
 ```
 /workspace/
-├── rem/        # This repository  
+├── rem/        # This repository
 │   ├── start.sh               # Main setup script
 │   ├── scripts/               # Modular setup components
 │   │   ├── 01-install-deps.sh

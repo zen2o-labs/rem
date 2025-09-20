@@ -119,6 +119,40 @@ echo '%wheel ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/wheel
 chmod 440 /etc/sudoers.d/wheel
 echo "✓ Sudo configured"
 
+# Step 10.5: Fix sudo ownership and permissions (CRITICAL for containers)
+echo "Fixing sudo ownership and permissions..."
+if [[ -f /usr/bin/sudo ]]; then
+    chown root:root /usr/bin/sudo
+    chmod 4755 /usr/bin/sudo
+    echo "✓ Fixed sudo binary ownership"
+fi
+
+if [[ -f /etc/sudo.conf ]]; then
+    chown root:root /etc/sudo.conf
+    chmod 644 /etc/sudo.conf
+    echo "✓ Fixed sudo.conf ownership"
+fi
+
+if [[ -f /etc/sudoers ]]; then
+    chown root:root /etc/sudoers
+    chmod 440 /etc/sudoers
+    echo "✓ Fixed sudoers ownership"
+fi
+
+if [[ -d /etc/sudoers.d ]]; then
+    chown root:root /etc/sudoers.d
+    chmod 750 /etc/sudoers.d
+    for file in /etc/sudoers.d/*; do
+        if [[ -f "$file" ]]; then
+            chown root:root "$file"
+            chmod 440 "$file"
+        fi
+    done 2>/dev/null || true
+    echo "✓ Fixed sudoers.d ownership"
+fi
+
+echo "✓ Sudo ownership and permissions configured"
+
 # Step 11: Set up home directory
 echo "Setting up home directory..."
 mkdir -p /home/$USERNAME/{.config,.local,projects,downloads}
