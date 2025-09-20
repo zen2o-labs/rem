@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Use environment variables from main script
-CONFIG_FILE="${CONFIG_FILE:-/workspace/arch-config.txt}"
+CONFIG_FILE="${CONFIG_FILE:-$WORKSPACE_DIR/arch-config.txt}"
 
 log() {
     echo "[$(date '+%H:%M:%S')] CONFIG: $1"
@@ -14,12 +14,12 @@ main() {
         return 0
     fi
     
-    log "Generating secure configuration at $CONFIG_FILE..."
+    log "Generating configuration at $CONFIG_FILE..."
     
-    # Auto-generate secure passwords
-    USERNAME="developer"
-    USER_PASS=$(openssl rand -base64 12 | tr -d "=+/" | cut -c1-12)
-    ROOT_PASS=$(openssl rand -base64 12 | tr -d "=+/" | cut -c1-12)
+    # Use environment variables if provided, otherwise generate
+    USERNAME="${ARCH_USERNAME:-developer}"
+    USER_PASS="${ARCH_USER_PASSWORD:-$(openssl rand -base64 12 | tr -d '=+/' | cut -c1-12)}"
+    ROOT_PASS="${ARCH_ROOT_PASSWORD:-$(openssl rand -base64 12 | tr -d '=+/' | cut -c1-12)}"
     
     # Save configuration with repository info
     cat > "$CONFIG_FILE" << EOF
@@ -41,6 +41,18 @@ EOF
     
     chmod 600 "$CONFIG_FILE"
     log "✓ Configuration generated at $CONFIG_FILE"
+    
+    if [[ -n "${ARCH_USER_PASSWORD:-}" ]]; then
+        log "✓ Using provided user password"
+    else
+        log "✓ Generated user password: $USER_PASS"
+    fi
+    
+    if [[ -n "${ARCH_ROOT_PASSWORD:-}" ]]; then
+        log "✓ Using provided root password"
+    else
+        log "✓ Generated root password: $ROOT_PASS"
+    fi
 }
 
 main "$@"

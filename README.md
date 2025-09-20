@@ -4,23 +4,31 @@
 
 A complete Arch Linux chroot environment that runs inside Ubuntu-based containers, perfect for RunPod GPU instances. Get the power of Arch Linux's rolling releases and AUR packages while maintaining compatibility with containerized workflows.
 
-## 🚀 Quick Start
-
+### setup script link
+```
+cd "$WORKSPACE" && curl -fsSL https://raw.githubusercontent.com/zen2o-labs/rem/main/container-setup.sh | bash
+```
+## 🚀 Setup (Example RunPod)
 ```bash
-# In your RunPod container's /workspace directory:
-git clone https://github.com/yourusername/arch-chroot-runpod.git
-cd rem
-find . -type f -iname "*.sh" -exec chmod +x {}
-./start.sh
+bash -c '
+    export WORKSPACE="/your/mounted/directory/WORKSPACE";
+    export ARCH_USERNAME="${ARCH_USERNAME:-developer}";
+    export ARCH_USER_PASSWORD="${ARCH_USER_PASSWORD:-}";
+    export ARCH_ROOT_PASSWORD="${ARCH_ROOT_PASSWORD:-}";
+    export WORKSPACE="[your mounted directory/WORKSPACE]"
+    apt update && apt install -y git openssh-server curl;
+    mkdir -p "$WORKSPACE" ~/.ssh;
+    chmod 700 ~/.ssh;
+    [ -n "$PUBLIC_KEY" ] && echo "$PUBLIC_KEY" >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys;
+    service ssh start;
+    cd "$WORKSPACE" && curl -fsSL https://raw.githubusercontent.com/zen2o-labs/rem/main/container-setup.sh | bash;
+    sleep infinity 
+'
 ```
+## If passwords and usernames are not Set
+always create a password and username if not then you should not login into Arch. Instead Login into the container Shell go the repo
+you will find a config file containing generated passwords
 
-## Tips
-add this code in the end of you container startup script (start from root)
-
-```bash 
-find /path/to/rem -type f -iname "*.sh" -exec chmod +x {}
-/path/to/rem/.start.sh
-```
 That's it! The setup automatically:
 - ✅ Downloads and installs Arch Linux bootstrap
 - ✅ Configures container-safe environment
@@ -66,7 +74,7 @@ After setup, your workspace will look like:
 
 ```
 /workspace/
-├── arch-chroot-runpod/        # This repository  
+├── rem/        # This repository  
 │   ├── start.sh               # Main setup script
 │   ├── scripts/               # Modular setup components
 │   │   ├── 01-install-deps.sh
