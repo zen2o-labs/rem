@@ -8,7 +8,7 @@ A complete Arch Linux chroot environment that runs inside Ubuntu-based container
 ```
 cd "$WORKSPACE" && curl -fsSL https://raw.githubusercontent.com/zen2o-labs/rem/main/container-setup.sh | bash
 ```
-## 🚀 Setup (Example RunPod)
+## 🚀 Setup (Example)
 ```bash
 bash -c '
     export WORKSPACE="/workspace"
