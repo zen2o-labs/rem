@@ -85,10 +85,13 @@ main() {
     chmod 1777 "$ARCH_ROOT/tmp"
 
     # Create bash symlinks
-    if [[ -f "$ARCH_ROOT/usr/bin/bash" ]]; then
+    # Create bash symlinks - but only if bash is a real executable
+    if [[ -x "$ARCH_ROOT/usr/bin/bash" && ! -L "$ARCH_ROOT/usr/bin/bash" ]]; then
         ln -sf /usr/bin/bash "$ARCH_ROOT/bin/bash"
         ln -sf /usr/bin/bash "$ARCH_ROOT/bin/sh"
         log "✓ Created bash symlinks"
+    else
+        log "⚠ Real bash executable not found - may need manual extraction"
     fi
 
     touch "$ARCH_ROOT/.bootstrap_done"
