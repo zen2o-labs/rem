@@ -1,9 +1,11 @@
 #!/bin/bash
+# /rem/scripts/06-setup-users.sh
 set -euo pipefail
 
 # Use environment variables from main script
-ARCH_ROOT="${ARCH_ROOT:-/workspace/arch-root}"
-CONFIG_FILE="${CONFIG_FILE:-/workspace/arch-config.txt}"
+ARCH_ROOT="${ARCH_ROOT:-${WORKSPACE_DIR:-$(pwd)}/arch-root}"
+CONFIG_FILE="${CONFIG_FILE:-${WORKSPACE_DIR:-$(pwd)}/arch-config.txt}"
+WORKSPACE_DIR="${WORKSPACE_DIR:-$(pwd)}"
 
 log() {
     echo "[$(date '+%H:%M:%S')] USERS: $1"

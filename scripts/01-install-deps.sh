@@ -1,4 +1,5 @@
 #!/bin/bash
+# /rem/scripts/01-install-deps.sh
 set -euo pipefail
 
 log() {

@@ -1,14 +1,14 @@
-# Arch Linux Configuration - Generated Sat Sep 20 05:53:30 UTC 2025
+# Arch Linux Configuration - Generated Sat Sep 20 11:32:00 UTC 2025
 # Repository: /workspace/rem
-# Workspace: /workspace/rem
+# Workspace: /workspace/
 
 USERNAME="developer"
-USER_PASS="KP5dXObS00E8"
-ROOT_PASS="RPW6H9j3u7y2"
+USER_PASS="47xM8rZAlP7i"
+ROOT_PASS="ONaMlB5YCuXB"
 
 # Directory locations (auto-detected)
-WORKSPACE_DIR="/workspace/rem"
-ARCH_ROOT="/workspace/rem/arch-root"
+WORKSPACE_DIR="/workspace/"
+ARCH_ROOT="/workspace/arch-root"
 SCRIPT_DIR="/workspace/rem"
 
 # Edit these values and run /workspace/rem/tools/change-passwords.sh to apply changes

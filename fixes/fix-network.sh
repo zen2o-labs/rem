@@ -1,8 +1,10 @@
 #!/bin/bash
+# /rem/fixes/fix-network.sh
 set -euo pipefail
 
-# Use environment variables from main script
-ARCH_ROOT="${ARCH_ROOT:-/workspace/arch-root}"
+# Use environment variables from main script with proper fallbacks
+ARCH_ROOT="${ARCH_ROOT:-${WORKSPACE_DIR:-$(pwd)}/arch-root}"
+WORKSPACE_DIR="${WORKSPACE_DIR:-$(pwd)}"
 MARKER_FILE="$ARCH_ROOT/.network_fixed"
 
 log() {
@@ -14,12 +16,12 @@ main() {
         log "Network already configured, skipping..."
         return 0
     fi
-
+    
     if [[ ! -d "$ARCH_ROOT" ]]; then
         log "ERROR: Arch root not found at $ARCH_ROOT"
         exit 1
     fi
-
+    
     log "Configuring network access for Arch chroot..."
     
     # Update DNS configuration

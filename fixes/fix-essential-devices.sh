@@ -1,8 +1,10 @@
 #!/bin/bash
+# /rem/fixes/fix-essential-devices.sh
 set -euo pipefail
 
-# Use environment variables from main script
-ARCH_ROOT="${ARCH_ROOT:-/workspace/arch-root}"
+# Use environment variables from main script with proper fallbacks
+ARCH_ROOT="${ARCH_ROOT:-${WORKSPACE_DIR:-$(pwd)}/arch-root}"
+WORKSPACE_DIR="${WORKSPACE_DIR:-$(pwd)}"
 MARKER_FILE="$ARCH_ROOT/.essential_devices_fixed"
 
 log() {
@@ -14,12 +16,12 @@ main() {
         log "Essential devices already fixed, skipping..."
         return 0
     fi
-
+    
     if [[ ! -d "$ARCH_ROOT" ]]; then
         log "ERROR: Arch root not found at $ARCH_ROOT"
         exit 1
     fi
-
+    
     log "Fixing essential devices (/dev/null, /dev/zero, /dev/random, /dev/fd, etc.) for container compatibility..."
     
     # Create the comprehensive device fix script
@@ -53,9 +55,9 @@ rm -f /dev/null /dev/zero /dev/random /dev/urandom 2>/dev/null || true
 echo "Attempting to create proper device nodes..."
 DEVICES_CREATED=false
 
-if mknod /dev/null c 1 3 2>/dev/null && \
-   mknod /dev/zero c 1 5 2>/dev/null && \
-   mknod /dev/random c 1 8 2>/dev/null && \
+if mknod /dev/null c 1 3 2>/dev/null && \\
+   mknod /dev/zero c 1 5 2>/dev/null && \\
+   mknod /dev/random c 1 8 2>/dev/null && \\
    mknod /dev/urandom c 1 9 2>/dev/null; then
     
     # Set proper permissions
@@ -97,7 +99,7 @@ if [[ "$DEVICES_CREATED" == "false" ]]; then
         # Background process to provide zeros
         nohup bash -c '
             while true; do
-                printf "\0%.0s" {1..1024} > /dev/zero 2>/dev/null || true
+                printf "\\0%.0s" {1..1024} > /dev/zero 2>/dev/null || true
                 sleep 0.1
             done
         ' >/tmp/zero-provider.log 2>&1 &
@@ -192,7 +194,6 @@ if [[ -d /home ]]; then
             
             # Add to user's bashrc
             cat >> "$user_home/.bashrc" << 'BASHFIX'
-
 # Container essential devices fix
 if [[ ! -w /dev/null ]] 2>/dev/null; then
     alias sudo='sudo 2>/tmp/sudo-stderr || sudo'
@@ -228,7 +229,7 @@ echo "=== Essential Devices Fix Summary ==="
 echo "Null device working: $NULL_WORKS"
 echo "Zero device working: $ZERO_WORKS"
 echo "File descriptors: $(ls -la /dev/fd/ 2>/dev/null | wc -l) entries"
-echo "Background processes: $(pgrep -f "null-keeper\|zero-provider\|random-provider" 2>/dev/null | wc -l) running"
+echo "Background processes: $(pgrep -f "null-keeper|zero-provider|random-provider" 2>/dev/null | wc -l) running"
 echo "Shell fixes: bash, zsh environment configured"
 
 if [[ "$NULL_WORKS" == "true" ]]; then
